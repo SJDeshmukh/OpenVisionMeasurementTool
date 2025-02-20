@@ -163,7 +163,7 @@
 
             dropdownContainer.style.display = 'block';
 
-            fetch('http://localhost:5000/get-config')
+            fetch('/get-config')
                 .then(response => response.json())
                 .then(data => {
                     configData = data;
@@ -208,7 +208,7 @@
             formData.append('image', imageInput.files[0]);
             formData.append('json', JSON.stringify(partData));
 
-            fetch('http://localhost:5000/check_length', {
+            fetch('/check_length', {
                 method: 'POST',
                 body: formData
             })
