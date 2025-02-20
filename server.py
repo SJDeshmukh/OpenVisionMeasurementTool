@@ -203,7 +203,9 @@ def check_length():
 @app.route('/choose', methods=['GET', 'POST'])
 def choose():
     return render_template('choose.html')
-
+@app.route('/', methods=['GET', 'POST'])
+def into():
+    return render_template('login.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
