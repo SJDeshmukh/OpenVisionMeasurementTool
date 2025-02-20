@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Webpage</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #000000;
+            color: #00FF00;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            background-image: url('https://www.transparenttextures.com/patterns/blue-jeans.png');
+            background-size: cover;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border: 3px solid #00FF00;
+            border-radius: 20px;
+            box-shadow: 0 0 20px #00FF00;
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            z-index: 10;
+            transition: transform 0.5s ease;
+        }
+
+        .container:hover {
+            transform: scale(1.05);
+        }
+
+        h2 {
+            font-size: 3rem;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            text-align: left;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00FF00;
+            border-radius: 8px;
+            background-color: #111;
+            color: #00FF00;
+            font-size: 1.2rem;
+            outline: none;
+        }
+
+        button {
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #00FF00;
+            color: #000000;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            z-index: 20;
+        }
+
+        .dropdown-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 600px) {
+            h2 {
+                font-size: 2rem;
+            }
+            label {
+                font-size: 1.2rem;
+            }
+            input, select, button {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="notification"></div>
+
+    <div class="container" id="mainContainer">
+        <h2>TEST PAGE</h2>
+
+        <div class="input-group" id="imageUploadContainer">
+            <label for="imageInput">Upload Image:</label>
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+
+        <div id="imageDisplay" style="display: none; margin-bottom: 20px;">
+            <canvas id="imageCanvas"></canvas>
+        </div>
+
+        <div class="dropdown-container" id="dropdownContainer" style="display: none;">
+            <label for="partSelect">Select Part:</label>
+            <select id="partSelect">
+                <option value="">--Select Part--</option>
+            </select>
+            <button id="processButton" style="display: none;">Process</button>
+        </div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const imageUploadContainer = document.getElementById('imageUploadContainer');
+        const dropdownContainer = document.getElementById('dropdownContainer');
+        const imageDisplay = document.getElementById('imageDisplay');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const ctx = imageCanvas.getContext('2d');
+        const partSelect = document.getElementById('partSelect');
+        const processButton = document.getElementById('processButton');
+        const notification = document.getElementById('notification');
+
+        let configData = [];
+        let uploadedImage = new Image();
+
+        imageInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    uploadedImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            uploadedImage.onload = function () {
+                imageCanvas.width = uploadedImage.width;
+                imageCanvas.height = uploadedImage.height;
+                ctx.drawImage(uploadedImage, 0, 0);
+                imageDisplay.style.display = 'block';
+                imageUploadContainer.style.display = 'none';
+            };
+
+            dropdownContainer.style.display = 'block';
+
+            fetch('http://localhost:5000/get-config')
+                .then(response => response.json())
+                .then(data => {
+                    configData = data;
+                    partSelect.innerHTML = '<option value="">--Select Part--</option>';
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.partName;
+                        option.textContent = `${item.partName} (Bounding Boxes: ${item.boundingBoxes.length})`;
+                        partSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading config file:', error));
+        });
+
+        partSelect.addEventListener('change', function () {
+            processButton.style.display = this.value ? 'block' : 'none';
+        });
+
+        processButton.addEventListener('click', function () {
+            const selectedPart = partSelect.value;
+            const partData = configData.find(item => item.partName === selectedPart);
+
+            if (partData) {
+                drawBoundingBoxes(partData.boundingBoxes);
+                checkLength(partData);
+            }
+        });
+
+        function drawBoundingBoxes(boxes) {
+            ctx.drawImage(uploadedImage, 0, 0);
+            ctx.strokeStyle = '#00FF00';
+            ctx.lineWidth = 2;
+
+            boxes.forEach(box => {
+                const { x, y, width, height } = box;
+                ctx.strokeRect(x, y, width, height);
+            });
+        }
+
+        function checkLength(partData) {
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+            formData.append('json', JSON.stringify(partData));
+
+            fetch('http://localhost:5000/check_length', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => showNotification(data.measured_lengths.map(item => `${item.partName}: ${item.length}`).join('<br>')))
+            .catch(error => showNotification('Error processing image.'));
+        }
+
+        function showNotification(message) {
+            notification.innerHTML = message;
+            notification.style.display = 'block';
+            setTimeout(() => notification.style.display = 'none', 8000);
+        }
+    </script>
+</body>
+</html>

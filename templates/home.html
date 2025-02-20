@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPEN VISION MEASUREMENT TOOL</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #000000;
+            color: #00FF00;
+            padding-top: 100px;
+            margin: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/blue-jeans.png');
+            background-size: cover;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        h2 {
+            font-size: 50px;
+            text-align: center;
+            color: #00FF00;
+        }
+        .outer-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-grow: 1;
+            overflow-y: auto;
+            height: 90vh;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border: 3px solid #00FF00;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #00FF00;
+            width: 90%;
+            text-align: center;
+            transition: transform 0.3s ease;
+            margin-top: 20px;
+            z-index: 1;
+        }
+        input, button {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #00FF00;
+            border-radius: 5px;
+            background-color: #111;
+            color: #00FF00;
+            font-size: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            outline: none;
+        }
+        input[type="file"] {
+            background-color: #222;
+            cursor: pointer;
+        }
+        button {
+            background-color: #FF0000;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #FF4500;
+        }
+        label {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .input-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .image-preview {
+            max-width: 350px;
+            max-height: 350px;
+            margin-bottom: 20px;
+            border: 3px solid #00FF00;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #00FF00;
+        }
+        #imageInput {
+            margin: 0;
+            padding: 12px;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        #imageInput:hover {
+            background-color: #444;
+        }
+        .param-row {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .param-row input {
+            margin-left: 10px;
+            width: 40%;
+        }
+        .param-row .radio-container {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+        .param-row .radio-container input {
+            width: auto;
+            margin: 0 5px;
+        }
+        #submitBtn {
+            background-color: #008000;
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        #submitBtn:disabled {
+            cursor: not-allowed;
+            background-color: #555;
+            opacity: 0.5;
+        }
+
+        #submitBtn:hover {
+            background-color: #006400;
+        }
+        #errorMsg {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #FF0000;
+            color: #FFFFFF;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            z-index: 10;
+        }
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #ffe600;
+            color: #000000;
+            padding: 30px;
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+        }
+        .drawing-section {
+            margin-top: 50px;
+            display: none;
+        }
+        .tick-mark {
+            font-size: 24px;
+            color: #00FF00;
+            margin-left: 10px;
+        }
+
+        /* Rain effect */
+        .rain {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: #ff0000;
+            opacity: 0.5;
+            animation: fall 1s linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px);
+            }
+            100% {
+                transform: translateY(100vh);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="errorMsg">Please fill all fields correctly.</div>
+    <div id="notification">JSON Saved Successfully!</div>
+
+    <div class="outer-container">
+
+        <div class="container">
+            <h2>OPEN VISION</h2><h2>
+
+            <h2> MEASUREMENT TOOL</h2>
+            <label for="imageInput">Upload Image:</label>
+            <input type="file" id="imageInput" accept="image/*" onchange="loadImage()">
+            <div id="imagePreview"></div>
+            <div id="partNameContainer" style="display: none;">
+                <label for="partName">Part Name:</label>
+                <input type="text" id="partName" name="partName" required>
+            </div>
+
+            <div class="drawing-section">
+                <h3>Draw Bounding Box</h3>
+                <canvas id="imageCanvas"></canvas>
+            </div>
+
+            <label for="paramCount">Enter Number of Parameters:</label>
+            <input type="number" id="paramCount" min="1" placeholder="e.g., 3">
+            <button id="createFirstInput" onclick="generateInputs()">Create First Input</button>
+
+            <div id="inputContainer" class="input-container"></div>
+
+            <button id="submitBtn" style="display: none;" onclick="submitForm()">Submit</button>
+
+            <a id="downloadLink" style="display: none;">Download JSON</a>
+
+        </div>
+    </div>
+
+    <script>
+
+        let currentParam = 0;
+        let canvas, ctx;
+        let img = new Image();
+        let startX, startY, endX, endY;
+        let isDrawing = false;
+        let boundingBoxes = [];
+        let imagePath = '';
+        let partName = '';
+
+        function loadImage() {
+            const input = document.getElementById('imageInput');
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+
+            if (input.files && input.files[0]) {
+                img.src = URL.createObjectURL(input.files[0]);
+                imagePath = img.src;
+                img.onload = function() {
+                    initCanvas(img.width, img.height);
+                    document.getElementById('partNameContainer').style.display = 'block';
+                };
+            }
+        }
+
+        function initCanvas(width, height) {
+            canvas = document.getElementById('imageCanvas');
+            canvas.width = width;
+            canvas.height = height;
+            ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            addCanvasEvents();
+        }
+
+        function addCanvasEvents() {
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', endDrawing);
+            canvas.addEventListener('mouseout', endDrawing);
+        }
+
+        function startDrawing(event) {
+            const currentRow = document.querySelectorAll('.param-row')[currentParam];
+            const nameInput = currentRow.querySelector('input[type="text"]');
+            const valueInput = currentRow.querySelector('input[type="number"]');
+
+            if (!nameInput.value || !valueInput.value) {
+                showError('Please fill all parameter fields before drawing.');
+                return;
+            }
+
+            isDrawing = true;
+            startX = event.offsetX;
+            startY = event.offsetY;
+        }
+
+        function draw(event) {
+            if (!isDrawing) return;
+            endX = event.offsetX;
+            endY = event.offsetY;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+
+            ctx.strokeStyle = '#00FF00';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+        }
+
+        function endDrawing(event) {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            boundingBoxes[currentParam] = {
+                x: startX,
+                y: startY,
+                width: endX - startX,
+                height: endY - startY
+            };
+
+            const currentRow = document.querySelectorAll('.param-row')[currentParam];
+            const goToDrawButton = currentRow.querySelector('button');
+            if (goToDrawButton) {
+                goToDrawButton.style.display = 'none';
+
+                // Remove existing "Next" button if it exists
+                const existingNextButton = currentRow.querySelector('.next-button');
+                if (existingNextButton) {
+                    existingNextButton.remove();
+                }
+
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Next';
+                nextButton.className = 'next-button'; // Add a class for easy identification
+                nextButton.onclick = function () {
+                    currentParam++;
+                    generateInputs();
+                    const tickMark = document.createElement('span');
+                    tickMark.className = 'tick-mark';
+                    tickMark.textContent = '✔';
+                    nextButton.replaceWith(tickMark);
+                    resetCanvas();
+                };
+                currentRow.appendChild(nextButton);
+            }
+        }
+
+        function resetCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+        }
+
+        function generateInputs() {
+            const container = document.getElementById('inputContainer');
+            const count = parseInt(document.getElementById('paramCount').value);
+
+            if (isNaN(count) || count < 1) {
+                showError('Please enter a valid number of parameters.');
+                return;
+            }
+
+            if (currentParam < count) {
+                const row = document.createElement('div');
+                row.className = 'param-row';
+
+                const label = document.createElement('label');
+                label.textContent = `Parameter ${currentParam + 1} Name:`;
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.placeholder = `Parameter ${currentParam + 1} Name`;
+
+                const valueInput = document.createElement('input');
+                valueInput.type = 'number';
+                valueInput.placeholder = `Value for Parameter ${currentParam + 1}`;
+
+                const radioContainer = document.createElement('div');
+                radioContainer.className = 'radio-container';
+
+                const radioLabel1 = document.createElement('label');
+                radioLabel1.textContent = 'Vertical';
+                const radioInput1 = document.createElement('input');
+                radioInput1.type = 'radio';
+                radioInput1.name = `orientation_${currentParam}`;
+                radioInput1.value = 'vertical';
+                radioLabel1.appendChild(radioInput1);
+
+                const radioLabel2 = document.createElement('label');
+                radioLabel2.textContent = 'Horizontal';
+                const radioInput2 = document.createElement('input');
+                radioInput2.type = 'radio';
+                radioInput2.name = `orientation_${currentParam}`;
+                radioInput2.value = 'horizontal';
+                radioLabel2.appendChild(radioInput2);
+
+                radioContainer.appendChild(radioLabel1);
+                radioContainer.appendChild(radioLabel2);
+
+                const goToDrawButton = document.createElement('button');
+                goToDrawButton.textContent = 'Go to Draw';
+                goToDrawButton.disabled = true; // Initially disabled
+                goToDrawButton.onclick = function () {
+                    partName = document.getElementById('partName').value;
+                    if (!imagePath || !nameInput.value || !valueInput.value || !partName) {
+                        showError('Please upload an image, fill all parameter fields, and enter the part name.');
+                        return;
+                    }
+                    document.querySelector('.drawing-section').scrollIntoView({ behavior: 'smooth' });
+                    document.querySelector('.drawing-section').style.display = 'block';
+                };
+
+                // Add event listeners to enable/disable the button
+                nameInput.addEventListener('input', () => {
+                    goToDrawButton.disabled = !nameInput.value || !valueInput.value;
+                });
+
+                valueInput.addEventListener('input', () => {
+                    goToDrawButton.disabled = !nameInput.value || !valueInput.value;
+                });
+
+                row.appendChild(label);
+                row.appendChild(nameInput);
+                row.appendChild(valueInput);
+                row.appendChild(radioContainer);
+                row.appendChild(goToDrawButton);
+                container.appendChild(row);
+            }
+
+            if (count > 0) {
+                document.getElementById('createFirstInput').style.display = 'none';
+            }
+
+            if (currentParam === count) {
+                const nextButtons = document.querySelectorAll('.param-row button');
+                nextButtons.forEach(button => button.disabled = true);
+                document.getElementById('submitBtn').style.display = 'block';
+            }
+        }
+
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => errorMsg.style.display = 'none', 3000);
+        }
+
+        function submitForm() {
+            const inputs = document.querySelectorAll('.param-row');
+            let allFilled = true;
+
+            inputs.forEach(row => {
+                const nameInput = row.querySelector('input[type="text"]');
+                const valueInput = row.querySelector('input[type="number"]');
+                if (!nameInput.value || !valueInput.value) {
+                    allFilled = false;
+                }
+            });
+
+            if (!allFilled) {
+                showError('Please fill all fields correctly.');
+                return;
+            }
+
+            const jsonData = {
+                boundingBoxes: boundingBoxes,
+                parameters: [],
+                partName: partName
+            };
+
+            inputs.forEach(row => {
+                const nameInput = row.querySelector('input[type="text"]');
+                const valueInput = row.querySelector('input[type="number"]');
+                const orientation = row.querySelector('input[type="radio"]:checked');
+                jsonData.parameters.push({
+                    name: nameInput.value,
+                    value: valueInput.value,
+                    orientation: orientation ? orientation.value : null
+                });
+            });
+
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+            formData.append('json', JSON.stringify(jsonData));
+
+            fetch('http://127.0.0.1:5000/calibrate', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.calibration_values) {
+                        const notification = document.getElementById('notification');
+                        notification.innerText = 'Calibration Successful! Values: ' + data.calibration_values.join(', ');
+                        notification.style.display = 'block';
+
+                        setTimeout(() => {
+                            notification.style.display = 'none';
+                            window.location.href = 'choose.html?calibrated=true';
+                        }, 3000);
+                    } else if (data.error) {
+                        showError('Calibration Failed: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    showError('Error during calibration: ' + error.message);
+                });
+
+            // Send the JSON to Flask to save in "config.json"
+            fetch('http://127.0.0.1:5000/save-config', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const notification = document.getElementById('notification');
+                    notification.style.display = 'block';
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                        window.location.href = 'choose.html?success=true';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                showError('Error saving data: ' + error.message);
+            });
+        }
+
+        // Create rain effect
+        const createRain = () => {
+            const body = document.body;
+            const rainCount = 500; // Number of rain drops
+
+            for (let i = 0; i < rainCount; i++) {
+                const rain = document.createElement('div');
+                rain.className = 'rain';
+                rain.style.left = Math.random() * body.clientWidth + 'px';
+                rain.style.animationDuration = Math.random() * 1 + 1 + 's'; // Random duration for fall
+                body.appendChild(rain);
+            }
+        };
+
+        createRain();
+    </script>
+</body>
+</html>

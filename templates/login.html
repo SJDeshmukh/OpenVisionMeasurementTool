@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #000000;
+            color: #00FF00;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/blue-jeans.png');
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .login-container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5vw;
+            border: 3px solid #00FF00;
+            border-radius: 30px;
+            box-shadow: 0 0 30px #00FF00;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            transition: transform 0.5s ease;
+            z-index: 1;
+        }
+
+        .login-container:hover {
+            transform: scale(1.05);
+        }
+
+        .login-container h2 {
+            font-size: clamp(24px, 6vw, 48px);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: clamp(16px, 4vw, 24px);
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #00FF00;
+            border-radius: 5px;
+            background-color: #111;
+            color: #00FF00;
+            font-size: clamp(16px, 4vw, 24px);
+            font-family: 'Courier New', Courier, monospace;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #00FF00;
+            border-radius: 5px;
+            background-color: #FF0000;
+            color: #00FF00;
+            font-size: clamp(16px, 4vw, 24px);
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            background-color: #FF4500;
+        }
+
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #FF0000;
+            color: #FFFFFF;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            z-index: 10;
+            font-size: clamp(12px, 3vw, 18px);
+        }
+
+        .rain {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: #ff0000;
+            opacity: 0.5;
+            top: -15px;
+            animation: fall 1.5s linear infinite;
+        }
+
+        @keyframes fall {
+            from {
+                transform: translateY(-100px);
+            }
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 8vw;
+            }
+
+            button {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="notification">Invalid username or password.</div>
+
+    <div class="login-container">
+        <h2>LOGIN</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username">USERNAME</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">PASSWORD</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit">LOGIN</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (username === 'admin' && password === 'password') {
+                window.location.href = 'http://127.0.0.1:5000/choose';
+            } else {
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+        });
+
+        const createRain = () => {
+            const body = document.body;
+            const rainCount = 150;
+
+            for (let i = 0; i < rainCount; i++) {
+                const rain = document.createElement('div');
+                rain.className = 'rain';
+                rain.style.left = Math.random() * window.innerWidth + 'px';
+                rain.style.animationDuration = (Math.random() * 1 + 1) + 's';
+                body.appendChild(rain);
+            }
+        };
+
+        createRain();
+    </script>
+</body>
+</html>

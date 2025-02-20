@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Page</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #000000;
+            color: #00FF00;
+            padding: 100px;
+            margin: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/blue-jeans.png');
+            background-size: cover;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .button-container {
+            text-align: center;
+            z-index: 1;
+        }
+
+        .large-button {
+            display: inline-block;
+            padding: 10px 20px;
+            border: 2px solid #00FF00;
+            border-radius: 5px;
+            background-color: #FF0000;
+            color: #00FF00;
+            text-decoration: none; /* Removes underline */
+            font-size: 24px;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .large-button:hover {
+            background-color: #FF4500;
+        }
+
+
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #ffe600;
+            color: #000000;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 10;
+        }
+
+        /* Rain effect */
+        .rain {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: #ff0000;
+            opacity: 0.5;
+            top: -15px; /* Start from above the viewport */
+            animation: fall 1s linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px);
+            }
+            100% {
+                transform: translateY(100vh);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="notification">JSON File Creation Successful!</div>
+
+    <div class="button-container">
+        <a class="large-button" href="http://127.0.0.1:5000/home">TRAIN</a>
+        <a class="large-button" href="http://127.0.0.1:5000/test">TEST</a>
+        
+        
+    </div>
+
+    <script>
+        // Function to get query parameters from the URL
+        const getQueryParam = (param) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        };
+
+        // Check for the 'success' query parameter and display the notification
+        if (getQueryParam('success') === 'true') {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Create rain effect
+        const createRain = () => {
+            const body = document.body;
+            const rainCount = 500; // Number of rain drops
+
+            for (let i = 0; i < rainCount; i++) {
+                const rain = document.createElement('div');
+                rain.className = 'rain';
+                rain.style.left = Math.random() * body.clientWidth + 'px';
+                rain.style.animationDuration = Math.random() * 1 + 1 + 's'; // Random duration for fall
+                body.appendChild(rain);
+            }
+        };
+
+        createRain();
+    </script>
+</body>
+</html>
