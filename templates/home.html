@@ -479,7 +479,7 @@
 
                         setTimeout(() => {
                             notification.style.display = 'none';
-                            window.location.href = '/choose.html?calibrated=true';
+                            window.location.href = '/choose';
                         }, 3000);
                     } else if (data.error) {
                         showError('Calibration Failed: ' + data.error);
