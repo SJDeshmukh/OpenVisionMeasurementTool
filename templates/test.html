@@ -214,7 +214,7 @@
             })
             .then(response => response.json())
             .then(data => showNotification(data.measured_lengths.map(item => `${item.partName}: ${item.length}`).join('<br>')))
-            .catch(error => showNotification('Error processing image.'));
+            .catch(error => showNotification('Error processing image: ' + error.message));
         }
 
         function showNotification(message) {
