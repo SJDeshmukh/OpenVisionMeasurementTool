@@ -466,7 +466,7 @@
             formData.append('image', imageInput.files[0]);
             formData.append('json', JSON.stringify(jsonData));
 
-            fetch('http://127.0.0.1:5000/calibrate', {
+            fetch('/calibrate', {
                     method: 'POST',
                     body: formData
                 })
@@ -490,7 +490,7 @@
                 });
 
             // Send the JSON to Flask to save in "config.json"
-            fetch('http://127.0.0.1:5000/save-config', {
+            fetch('/save-config', {
                 method: 'POST',
                 body: formData
             })
